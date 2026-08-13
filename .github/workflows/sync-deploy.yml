@@ -37,7 +37,7 @@ jobs:
           # 若让上游 workflow 文件经 merge 进入 fork，GitHub 检测到文件变更
           # 会自动重新启用被手动禁用的 build/deploy/dev/draft/pre-release/release
           git merge --no-commit --no-ff upstream/main
-          git checkout HEAD -- .github
+          git restore --source=HEAD --staged --worktree .github
           if git diff --cached --quiet; then
             echo "upstream already in sync, nothing to commit"
           else
