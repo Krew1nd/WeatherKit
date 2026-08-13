@@ -1,0 +1,53 @@
+name: Sync Upstream & Deploy
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # UTC 00:00 = 北京时间每天 08:00
+  workflow_dispatch:      # 手动触发（同步 + 部署）
+  push:
+    branches: [main]      # 手动 push 时仅部署（同步由上面两个事件负责）
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-deploy
+  cancel-in-progress: false
+
+jobs:
+  sync-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync upstream (schedule / manual only)
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/NSRingo/WeatherKit.git
+          git fetch upstream main
+          git merge upstream/main --no-edit
+          git push origin main
+
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler deploy --minify -c wrangler.workers.jsonc
+
+      - name: Verify deployment
+        run: |
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /tmp/wk.out -w "%{http_code}" "https://weatherkit.krew1nd.workers.dev/")
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && cat /tmp/wk.out && exit 0
+            sleep 10
+          done
+          echo "::warning::worker not reachable yet, check dashboard"
+          exit 1
