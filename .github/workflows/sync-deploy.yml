@@ -1,11 +1,9 @@
 name: Sync Upstream & Deploy
 
 on:
-  schedule:
-    - cron: '0 0 * * *'   # UTC 00:00 = 北京时间每天 08:00
-  workflow_dispatch:      # 手动触发（同步 + 部署）
+  workflow_dispatch:      # VPS 轮询检测到上游变更时触发（同步 + 部署）
   push:
-    branches: [main]      # 手动 push 时仅部署（同步由上面两个事件负责）
+    branches: [main]      # 手动 push 时仅部署
 
 permissions:
   contents: write
@@ -26,7 +24,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Sync upstream (schedule / manual only)
+      - name: Sync upstream (manual dispatch only)
         if: github.event_name != 'push'
         run: |
           git config user.name "github-actions[bot]"
