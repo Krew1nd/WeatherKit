@@ -1,45 +1,30 @@
 export interface Settings {
-    DataSets?: {
-        /**
-         * [数据集] 替换地区
-         *
-         * 正则表达式，只替换指定地区的数据集。
-         *
-         * @defaultValue "CN|HK|MO|TW|IT|LT|MT|FR|SK|NO|BY|IS|CZ|SI|DE|ES|UA|DK|PL|FI|SE|HR|RU|RO|PT|EE|RS|AT|GR|HU|FJ|GU|MH|NC|TR|BH|SA|ID|IR|SG|OM|PH|IN|KH|CY|MY|VN|KW|TH|KR|KP|CA|BS|KY|MX|PA|MQ|CU|BM|PR|CW|GP|NI|BR|GF|CO|GY|PY|AR"
-         */
-        Replace?: string;
-        /**
-         * [数据集]
-         *
-         * 选中的数据集会被包含在请求中。
-         *
-         * @remarks
-         *
-         * Possible values:
-         * - `'airQuality'` - 空气质量
-         * - `'currentWeather'` - 当前天气
-         * - `'forecastDaily'` - 每日预报
-         * - `'forecastHourly'` - 每小时预报
-         * - `'forecastNextHour'` - 未来一小时降水强度
-         * - `'locationInfo'` - 位置信息
-         * - `'news'` - 新闻
-         * - `'historicalComparisons'` - 历史对比
-         * - `'weatherAlerts'` - 天气预警
-         * - `'weatherChanges'` - 天气变化
-         *
-         * @defaultValue ["airQuality","currentWeather","forecastDaily","forecastHourly","forecastNextHour","locationInfo","news","historicalComparisons","weatherAlerts","weatherChanges"]
-         */
-        Value?: ("airQuality" | "currentWeather" | "forecastDaily" | "forecastHourly" | "forecastNextHour" | "locationInfo" | "news" | "historicalComparisons" | "weatherAlerts" | "weatherChanges")[];
-    };
+    /**
+     * [数据集]
+     *
+     * 仅控制插件可修改的数据集；取消选中会停止请求该数据集，其他 Apple 数据集始终透传。
+     *
+     * @remarks
+     *
+     * Possible values:
+     * - `'airQuality'` - 空气质量
+     * - `'currentWeather'` - 当前天气
+     * - `'forecastDaily'` - 每日预报
+     * - `'forecastHourly'` - 每小时预报
+     * - `'forecastNextHour'` - 未来一小时降水强度
+     *
+     * @defaultValue ["airQuality","currentWeather","forecastDaily","forecastHourly","forecastNextHour"]
+     */
+    DataSets?: ("airQuality" | "currentWeather" | "forecastDaily" | "forecastHourly" | "forecastNextHour")[];
     Weather?: {
         /**
          * [天气] 替换范围
          *
          * 正则表达式，只替换指定地区的天气。
          *
-         * @defaultValue "CN"
+         * @defaultValue ["CN"]
          */
-        Replace?: string;
+        Replace?: any[];
         /**
          * [天气] 数据源
          *
@@ -57,17 +42,24 @@ export interface Settings {
         Provider?: "WeatherKit" | "ColorfulClouds" | "QWeather";
     };
     WeatherAlerts?: {
+        /**
+         * [天气预警] 数据源
+         *
+         * 使用选定的数据源处理天气预警数据。
+         *
+         * @remarks
+         *
+         * Possible values:
+         * - `'WeatherKit'` - WeatherKit（不修改）
+         * - `'QWeatherWeb'` - 和风天气网页
+         * - `'QWeather'` - 和风天气 API
+         * - `'ColorfulClouds'` - 彩云天气 API
+         *
+         * @defaultValue "QWeatherWeb"
+         */
         Provider?: "WeatherKit" | "QWeatherWeb" | "QWeather" | "ColorfulClouds";
     };
     NextHour?: {
-        /**
-         * [未来一小时降水强度] 添加范围
-         *
-         * 正则表达式，只填补指定地区的未来一小时降水强度。
-         *
-         * @defaultValue "CN|HK|MO|TW|IT|LT|MT|FR|SK|NO|BY|IS|CZ|SI|DE|ES|UA|DK|PL|FI|SE|HR|RU|RO|PT|EE|RS|AT|GR|HU|FJ|GU|MH|NC|TR|BH|SA|ID|IR|SG|OM|PH|IN|KH|CY|MY|VN|KW|TH|KR|KP|CA|BS|KY|MX|PA|MQ|CU|BM|PR|CW|GP|NI|BR|GF|CO|GY|PY|AR"
-         */
-        Fill?: string;
         /**
          * [未来一小时降水强度] 数据源
          *
@@ -86,14 +78,6 @@ export interface Settings {
     };
     AirQuality?: {
         Current?: {
-            /**
-             * [空气质量 - 今日] 填补地区
-             *
-             * 正则表达式，只填补指定地区的今日空气质量数据。
-             *
-             * @defaultValue "CN|HK|MO"
-             */
-            Fill?: string;
             Pollutants?: {
                 /**
                  * [今日污染物] 数据源
@@ -206,14 +190,6 @@ export interface Settings {
         };
         Comparison?: {
             /**
-             * [空气质量 - 对比昨日] 填补地区
-             *
-             * 正则表达式，只填补指定地区的对比昨日数据。
-             *
-             * @defaultValue "CN|HK|MO"
-             */
-            Fill?: string;
-            /**
              * [空气质量 - 对比昨日] 变化时替换
              *
              * 即使已有对比昨日数据，当今日空气质量指数发生变化时，替换对比昨日数据。
@@ -268,10 +244,16 @@ export interface Settings {
              * - `'WAQI_InstantCast_US'` - 美标InstantCast（EPA-454/B-24-002）
              * - `'WAQI_InstantCast_CN'` - 国标InstantCast（HJ 633—2012）
              * - `'WAQI_InstantCast_CN_25_DRAFT'` - 国标InstantCast（HJ 633 2025年草案）
+             * - `'CA_AQHI'` - 加拿大AQHI（10.17269/s41997-019-00237-w）
+             * - `'HK_AQHI'` - 香港AQHI
+             * - `'AQHI_Multi_CN'` - AQHI-Multi（中国）
+             * - `'AQHI_Multi_CN_HK'` - AQHI-Multi（中国+香港）
+             * - `'CN_DEATH_AQHI'` - 中国（致死风险）AQHI
+             * - `'CN_DEATH_HK_AQHI'` - 中国（致死风险）+香港AQHI
              *
              * @defaultValue "EU_EAQI"
              */
-            Algorithm?: "None" | "UBA" | "EU_EAQI" | "WAQI_InstantCast_US" | "WAQI_InstantCast_CN" | "WAQI_InstantCast_CN_25_DRAFT";
+            Algorithm?: "None" | "UBA" | "EU_EAQI" | "WAQI_InstantCast_US" | "WAQI_InstantCast_CN" | "WAQI_InstantCast_CN_25_DRAFT" | "CA_AQHI" | "HK_AQHI" | "AQHI_Multi_CN" | "AQHI_Multi_CN_HK" | "CN_DEATH_AQHI" | "CN_DEATH_HK_AQHI";
             /**
              * [iRingo内置算法] 允许指数超标
              *

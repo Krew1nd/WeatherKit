@@ -35,6 +35,8 @@ http:
       argument:
     - match: ^https?:\/\/weatherkit\.apple\.com\/api\/v1\/weatherAlerts\?[^#]*&ids=-?[0-9]+(?:\.[0-9]+)?,-?[0-9]+(?:\.[0-9]+)?(?:&|$)
       name: WeatherKit.api.v1.weatherAlerts.request
+    - match: ^https?:\/\/weatherkit\.apple\.com\/api\/v1\/airQualityScale\/
+      name: WeatherKit.api.v1.airQualityScale.request
       type: request
       argument:
     - match: ^https?:\/\/weatherkit\.apple\.com\/api\/v2\/weather\/
@@ -48,6 +50,9 @@ script-providers:
     url: https://github.com/NSRingo/WeatherKit/releases/download/v{{@package 'version'}}/response.bundle.js
     interval: 86400
   WeatherKit.api.v1.weatherAlerts.request:
+    url: https://github.com/NSRingo/WeatherKit/releases/download/v{{@package 'version'}}/request.bundle.js
+    interval: 86400
+  WeatherKit.api.v1.airQualityScale.request:
     url: https://github.com/NSRingo/WeatherKit/releases/download/v{{@package 'version'}}/request.bundle.js
     interval: 86400
   WeatherKit.api.v2.weather.response:

@@ -4,6 +4,7 @@ import WeatherAlerts from "../class/WeatherAlerts.mjs";
 import WeatherKit2 from "../class/WeatherKit2.mjs";
 import database from "../function/database.mjs";
 import setENV from "../function/setENV.mjs";
+import AirQualityScale from "../class/AirQualityScale.mjs";
 /***************** Processing *****************/
 export async function Request($request) {
     // 构造回复数据
@@ -155,6 +156,19 @@ export async function Request($request) {
                             if (dataSets) {
                                 dataSets = WeatherKit2.filterRootNames(dataSets, Settings.DataSets);
                                 url.searchParams.set("dataSets", dataSets?.join(","));
+                            }
+                            break;
+                        }
+                        case url.pathname.startsWith("/api/v1/airQualityScale/"): {
+                            // 拦截 AQHI 标尺请求，返回本地内置定义
+                            const pathParts = url.pathname.split("/").filter(Boolean);
+                            // /api/v1/airQualityScale/{language}/{scaleName}
+                            const language = pathParts[3] ?? "en";
+                            const scaleName = pathParts[4] ?? "";
+                            if (/^HK\.AQHI\./i.test(scaleName)) {
+                                $response = AirQualityScale.buildHKAQHIScale(language, scaleName);
+                            } else if (/^CN\.AQHI\./i.test(scaleName)) {
+                                $response = AirQualityScale.buildCNAQHIScale(language, scaleName);
                             }
                             break;
                         }
