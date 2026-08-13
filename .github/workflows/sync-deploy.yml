@@ -33,7 +33,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/NSRingo/WeatherKit.git
           git fetch upstream main
-          git merge upstream/main --no-edit
+          # 同步上游代码，但保留本 fork 自己的 .github（含 sync-deploy.yml）：
+          # 若让上游 workflow 文件经 merge 进入 fork，GitHub 检测到文件变更
+          # 会自动重新启用被手动禁用的 build/deploy/dev/draft/pre-release/release
+          git merge --no-commit --no-ff upstream/main
+          git checkout HEAD -- .github
+          git commit -m "chore: sync upstream (keep local workflows)"
           git push origin main
 
       - name: Setup Node
