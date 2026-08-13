@@ -38,8 +38,12 @@ jobs:
           # 会自动重新启用被手动禁用的 build/deploy/dev/draft/pre-release/release
           git merge --no-commit --no-ff upstream/main
           git checkout HEAD -- .github
-          git commit -m "chore: sync upstream (keep local workflows)"
-          git push origin main
+          if git diff --cached --quiet; then
+            echo "upstream already in sync, nothing to commit"
+          else
+            git commit -m "chore: sync upstream (keep local workflows)"
+            git push origin main
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
