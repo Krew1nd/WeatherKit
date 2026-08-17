@@ -1,9 +1,12 @@
 name: Sync Upstream & Deploy
 
 on:
-  workflow_dispatch:      # VPS 轮询检测到上游变更时触发（同步 + 部署）
+  schedule:
+    - cron: '0 4 * * *'    # UTC 04:00 = 北京时间每天 12:00
+    - cron: '0 16 * * *'   # UTC 16:00 = 北京时间每天 00:00
+  workflow_dispatch:       # 手动触发（同步 + 部署）
   push:
-    branches: [main]      # 手动 push 时仅部署
+    branches: [main]       # 手动 push 时仅部署
 
 permissions:
   contents: write
@@ -24,16 +27,15 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Sync upstream (manual dispatch only)
+      - name: Sync upstream (schedule / manual only)
         if: github.event_name != 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/NSRingo/WeatherKit.git
           git fetch upstream main
-          # 同步上游代码，但保留本 fork 自己的 .github（含 sync-deploy.yml）：
-          # 若让上游 workflow 文件经 merge 进入 fork，GitHub 检测到文件变更
-          # 会自动重新启用被手动禁用的 build/deploy/dev/draft/pre-release/release
+          # 同步上游代码，但保留本 fork 自己的 .github（含本 workflow）：
+          # 避免上游 workflow 文件变更后，被 GitHub 自动重新启用。
           git merge --no-commit --no-ff upstream/main
           git restore --source=HEAD --staged --worktree .github
           if git diff --cached --quiet; then
